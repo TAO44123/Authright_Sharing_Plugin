@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-09-30
+
+- 增加 Cursor 插件声明和 marketplace，显式引用共享 `.mcp.json`。
+- 三端版本统一为 `0.4.0`，继续共用六个 Skill 和生产 MCP。
+- 提供 Node.js 本地安装、更新、备份恢复和可恢复卸载脚本。
+- 导出白名单扩展为 17 个文件，并验证 Cursor 路径和三端版本。
+- 新增 Cursor 本地安装、团队目录接入和授权说明；运行时/OAuth 验收独立记录。
+
 ## 0.3.0 — 2026-09-30
 
 - 增加 Claude Code marketplace 和插件声明，支持从同一个 GitHub 仓库安装。
