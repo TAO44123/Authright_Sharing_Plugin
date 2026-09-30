@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sharing": {
+      "type": "http",
+      "url": "https://sharing.authright.com/mcp"
+    }
+  }
+}

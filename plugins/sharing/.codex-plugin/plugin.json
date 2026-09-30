@@ -1,0 +1,22 @@
+{
+  "name": "sharing",
+  "version": "0.2.0",
+  "description": "Find and share team links through Sharing at sharing.authright.com.",
+  "author": {
+    "name": "Sharing"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Sharing",
+    "shortDescription": "Find and share team links.",
+    "longDescription": "Connect Codex to sharing.authright.com with your company Google account to browse team links, read saved article and video summaries, save a URL, and withdraw your own shares.",
+    "developerName": "Sharing",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": "What has the team shared in the last seven days?"
+  },
+  "mcpServers": "./.mcp.json"
+}

@@ -1,0 +1,10 @@
+.DS_Store
+.env
+.env.*
+*.log
+*.pem
+*.key
+*.dump
+*.backup
+.local/
+node_modules/
