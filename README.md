@@ -1,120 +1,114 @@
 # Authright Sharing Plugin
 
-通过 Codex 查询和分享团队链接。当前 Plugin 版本：**0.2.0**。
+通过 **Claude Code 或 Codex** 查询和分享团队链接。当前 Plugin 版本：**0.3.0**。
 
-服务地址：[sharing.authright.com](https://sharing.authright.com)；MCP 地址：`https://sharing.authright.com/mcp`。Web、Worker、数据库和内容处理 API 已在服务器运行，使用本 Plugin 无需在电脑启动本地服务或 Docker。
+MCP 地址：`https://sharing.authright.com/mcp`。Web、Worker、数据库和 Gemini / YouTube 调用均在服务器运行，使用插件无需启动本地 Sharing 服务或 Docker，无需填写 API Key。
 
-本仓库保存 Plugin 文件和安装说明；应用服务源码位于 [Authright_Sharing](https://github.com/TAO44123/Authright_Sharing)。本版面向 Codex，Claude Code / Cursor 适配尚未提供。生产端点可达与 OAuth 发现已检查；从本 Git 来源的干净安装、生产授权、真实工具调用、更新和回退仍需验收。
+本仓库是分发产物；开发源位于 [Authright_Sharing](https://github.com/TAO44123/Authright_Sharing) 的 `plugins/`。两个客户端共用六个 Skill 和 MCP 配置，分别使用自己的插件声明和 marketplace。Cursor、Claude 网页版和 Cowork 尚未纳入本版验收。
 
-## 安装
+## Claude Code 安装
 
-前提：Codex 支持 Plugin marketplace，安装者具有本仓库读取权限，并使用 `@authright.com` 公司 Google 账号完成 Sharing 授权。私有仓库需要先配置 GitHub HTTPS 或 SSH 读取权限。
+前提：已安装支持 Plugin 的 Claude Code，拥有本仓库读取权限，并使用 `@authright.com` 公司 Google 账号授权。开发校验基线为 Claude Code `2.1.274`。
 
-在终端添加这个仓库作为目录源并安装：
+在终端执行：
+
+```sh
+claude plugin marketplace add TAO44123/Authright_Sharing_Plugin
+claude plugin install sharing@authright-sharing
+claude plugin list
+claude plugin details sharing
+```
+
+确认版本为 `0.3.0`，组件包含六个 Skill 和一个 Sharing MCP 连接。随后启动新的 Claude Code 会话，输入 `/mcp`，选择 Sharing 插件提供的连接并发起认证。在浏览器使用公司 Google 账号登录 Sharing，核对账号与权限后点击 **Allow access**。
+
+返回 Claude，执行只读查询：
+
+```text
+/sharing:list-members 展示所有成员列表
+/sharing:list-shares 查询最近七天团队分享了什么
+```
+
+安装会使用用户作用域。同事使用私有仓库时，需要先配置 GitHub HTTPS 或 SSH 读取权限；SSH 来源可使用 `git@github.com:TAO44123/Authright_Sharing_Plugin.git`。GitHub 仓库权限与 Sharing 业务授权独立。
+
+如已有手动配置的 Sharing MCP 或其他来源的同名插件，先在 `/mcp`、`/plugin` 确认连接来源，避免旧连接覆盖插件连接。验收必须使用插件所提供的生产连接。
+
+## Codex 安装
 
 ```sh
 codex plugin marketplace add TAO44123/Authright_Sharing_Plugin --ref main
 codex plugin add sharing@authright-sharing
 ```
 
-若使用 GitHub SSH，可将第一条替换为：
+在插件页面确认版本 `0.3.0` 和生产 MCP 地址，从 Sharing 连接设置发起 OAuth，完成公司 Google 登录与授权后打开新的聊天：
 
-```sh
-codex plugin marketplace add git@github.com:TAO44123/Authright_Sharing_Plugin.git --ref main
+```text
+$sharing:list-members 展示所有成员列表
+$sharing:list-shares 查询最近七天团队分享了什么
 ```
 
-也可以先克隆到电脑，再登记本地目录源：
-
-```sh
-git clone https://github.com/TAO44123/Authright_Sharing_Plugin.git
-codex plugin marketplace add ./Authright_Sharing_Plugin
-codex plugin add sharing@authright-sharing
-```
-
-CLI 命令来自当前已安装 Codex 的帮助与 [OpenAI 官方 Plugin 文档](https://developers.openai.com/plugins/build/plugins)。界面和管理员策略可能因客户端版本不同而变化，以上 Git 来源安装尚待真实验收。
-
-安装后在 Codex 插件页面确认 Sharing 版本为 `0.2.0`，连接地址为 `https://sharing.authright.com/mcp`，再打开新的聊天。
-
-### 已安装本地开发版的用户
-
-旧目录源为 `sharing-local`；本仓库目录源为 `authright-sharing`。在切换时关闭旧来源下的 Sharing，再启用新来源下的 Sharing，避免两个同名 MCP 连接同时工作。本次上传不会自动修改你电脑上已安装的插件或授权。
-
-## 登录与授权
-
-1. 从 Codex 的 Sharing 插件连接设置发起 OAuth 登录。
-2. 在浏览器使用公司 Google 账号登录生产 Sharing。
-3. 核对当前账号和权限，点击 **Allow access**。
-4. 返回 Codex，在新的聊天中执行一次只读查询确认连接。
-
-授权范围包括 `shares:read`、`shares:write`、`members:read`；需要刷新令牌时使用 `offline_access`。本地环境的凭据不直接适用于生产环境。客户端授权回跳可能使用 `127.0.0.1` 临时端口，这是客户端接收授权码的地址，MCP 服务仍在生产域名。
-
-如果客户端未打开授权页面，可在终端显式发起生产 OAuth：
-
-```sh
-codex -c 'mcp_servers.sharing.url="https://sharing.authright.com/mcp"' \
-  mcp login sharing \
-  --scopes shares:read,shares:write,members:read,offline_access \
-  --oauth-client-registration dcr
-```
-
-该命令只覆盖本次 CLI 配置，不会更新安装包；CLI 登录成功也不能代替桌面聊天的实际工具调用验证。
+此前使用 `sharing-local` 开发目录的用户，迁移时关闭旧来源下的 Sharing，再启用 `authright-sharing`，避免重复连接。已有安装缓存不会因为 Git push 自动更新。
 
 ## 六个指令入口
 
-| 指令 | 功能 |
-| --- | --- |
-| `$sharing:sharing` | 综合入口，根据需求组合查询、成员检索、提交和撤回操作。 |
-| `$sharing:list-shares` | 查询团队分享；支持时间、成员、关键词筛选与分页，默认最近七天。 |
-| `$sharing:get-share` | 查看一条分享的链接、分享人、处理状态、文章/视频摘要或视频作者描述。 |
-| `$sharing:list-members` | 展示或搜索团队成员，按姓名/邮箱区分同名用户。 |
-| `$sharing:share-link` | 将用户指定的文章或 YouTube URL 保存为团队分享。 |
-| `$sharing:withdraw-share` | 撤回当前用户自己发布的指定分享。 |
+| Claude Code | Codex | 功能 |
+| --- | --- | --- |
+| `/sharing:sharing` | `$sharing:sharing` | 综合入口，根据需求组合下面的操作。 |
+| `/sharing:list-shares` | `$sharing:list-shares` | 按时间、成员、关键词查询分享并分页；默认最近七天。 |
+| `/sharing:get-share` | `$sharing:get-share` | 查看一条分享的来源、分享者、处理状态和已保存摘要。 |
+| `/sharing:list-members` | `$sharing:list-members` | 列出所有成员，或按姓名、邮箱查询并消除同名歧义。 |
+| `/sharing:share-link` | `$sharing:share-link` | 按用户要求提交指定链接，归属当前授权用户。 |
+| `/sharing:withdraw-share` | `$sharing:withdraw-share` | 按用户要求撤回本人指定分享。 |
 
-示例：
+视频覆盖范围以返回的 `content_scope_note` 为准：当前摘要可以使用语音和采样画面，历史摘要可能只有音轨。保存内容不等于完整文章或视频逐字稿。分享成功也不等于摘要已经处理完成。
 
-```text
-$sharing:list-shares 最近七天团队分享了什么？
-$sharing:list-members 展示所有成员列表
-$sharing:get-share 查看刚才那条分享的详情
-$sharing:share-link 将这个链接分享到团队：https://example.com/article
+## 授权与重连
+
+业务权限为 `shares:read`、`shares:write`、`members:read`，刷新令牌使用 `offline_access`。安装包不包含个人令牌、Google Client Secret、模型 Key 或数据库凭据。
+
+OAuth 回跳可能出现 `127.0.0.1` 临时端口，这是客户端接收授权码的地址，业务服务仍位于生产域名。不要把旧 localhost 服务的令牌当作生产令牌。
+
+Claude 出现需要认证或权限不足时，从 `/mcp` 的 Sharing 连接重新认证；Codex 从插件连接设置重连。不要在聊天或问题报告里粘贴令牌、授权码或带敏感参数的回调 URL。
+
+## 更新、回退与卸载
+
+Claude Code 更新：
+
+```sh
+claude plugin marketplace update authright-sharing
+claude plugin update sharing@authright-sharing
 ```
 
-六个入口对应一个综合 Skill 与五个操作 Skill；实际能力由五个 MCP 工具提供。保存成功不等于摘要已生成。历史视频摘要可能仅覆盖音轨，新版可能覆盖语音与采样画面；以返回的 `content_scope_note` 为准。摘要和作者 Description 不代表文章全文或完整视频转录。
-
-## 更新与回退
-
-通过 Git marketplace 安装的用户，先刷新目录快照：
+随后重启 Claude 会话，检查实际版本和组件。Codex 先刷新目录，再在插件界面更新或重新安装：
 
 ```sh
 codex plugin marketplace upgrade authright-sharing
+codex plugin add sharing@authright-sharing
 ```
 
-随后在插件页面更新或重新安装 Sharing，核对版本与连接地址，并打开新聊天。通过本地 clone 安装时，先在该 clone 中执行 `git pull --ff-only`，再按客户端支持的方式更新或重新安装。不要直接修改 Codex 的安装缓存。
+插件版本与服务端版本独立。回退时使用已记录的 Git commit/tag 克隆一个独立目录，在客户端移除当前目录源，再添加该本地目录并重新安装。切换目录来源会影响已有安装，应记录当前版本和连接状态；不要直接改客户端缓存。`0.2.0`（`46c45fa`）只有 Codex，不能用作 Claude 回退版本。Claude 首版为 `0.3.0`。
 
-初次上传仅提供 `0.2.0`，目前没有已验收的 Git 发布标签或可回退版本。后续发布记录确切提交与兼容范围；回退到旧版时再按对应提交/标签登记目录并重新安装，不覆盖既有版本标签。客户端实际更新和回退流程仍待验收。
+Claude 卸载命令：
 
-## 卸载与撤销连接
-
-在 Codex 插件页面移除 Sharing；如还需撤销数据访问权，进入 [Sharing 账户页](https://sharing.authright.com/account) 撤销对应 Agent 连接。卸载插件与服务端撤权是两步操作，不能假定卸载会自动撤销 OAuth。
-
-## 文件结构
-
-```text
-.agents/plugins/marketplace.json
-plugins/sharing/
-  .codex-plugin/plugin.json
-  .mcp.json
-  skills/
-    sharing/SKILL.md
-    list-shares/SKILL.md
-    get-share/SKILL.md
-    list-members/SKILL.md
-    share-link/SKILL.md
-    withdraw-share/SKILL.md
-README.md
-CHANGELOG.md
+```sh
+claude plugin uninstall sharing@authright-sharing
 ```
 
-marketplace 中的 `source: local` 表示 Plugin 位于已获取的目录仓库内部；Git 仓库本身通过 `marketplace add` 获取。这个字段不意味着 MCP 使用本地服务器。
+Codex 在插件页面移除。还需要撤销数据访问权时，进入 [Sharing 账户页](https://sharing.authright.com/account) 撤销对应 Agent 连接；卸载插件不代表服务端授权已撤销。
 
-本安装包包含连接地址与 Skill，不含用户数据、服务端源码、API Key、Google Client Secret、数据库凭据或个人令牌。
+## 验收范围
+
+安装、加载和授权是不同的检查项。本版在 Claude Code `2.1.274` 中已通过严格格式校验、本地目录安装、六个 Skill 和一个生产 MCP 连接的组件检查。生产服务健康检查和 OAuth 发现此前已通过；详细结果记录在应用仓库的 `docs/validation/B_CLAUDE_PLUGIN.md`。真实 Google OAuth、五工具调用、刷新、撤权重连以及跨版本更新/回退，必须完成实际操作后才能认定通过。仅 `plugin validate` 成功不能代替这些检查。
+
+## 维护者发布
+
+在应用仓库修改源文件和本 README 模板，然后执行：
+
+```sh
+pnpm plugin:export /absolute/path/to/Authright_Sharing_Plugin
+pnpm plugin:export --check /absolute/path/to/Authright_Sharing_Plugin
+claude plugin validate /absolute/path/to/Authright_Sharing_Plugin --strict
+```
+
+导出脚本只复制白名单内文件，核对两端版本、目录入口和生产 MCP 配置；目标包含额外文件或符号链接时停止，不删除文件。提交前查看分发仓库 diff，提交并推送后，再从 Git 来源进行干净安装验证。
+
+参考：[Claude marketplace](https://code.claude.com/docs/en/plugin-marketplaces)、[Claude 插件格式](https://code.claude.com/docs/en/plugins-reference)、[Claude MCP 与 OAuth](https://code.claude.com/docs/en/mcp)、[Codex 插件格式](https://developers.openai.com/plugins/build/plugins)。

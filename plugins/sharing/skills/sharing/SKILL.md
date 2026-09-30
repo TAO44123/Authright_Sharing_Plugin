@@ -1,6 +1,6 @@
 ---
 name: sharing
-description: Use the Sharing team library from Codex to find members and shared links, inspect saved summaries or video descriptions, submit links, and withdraw the current user's own shares.
+description: Use the Sharing team library to find members and shared links, inspect saved summaries or video descriptions, submit links, and withdraw the current user's own shares.
 ---
 
 # Sharing
@@ -19,7 +19,7 @@ Use the Sharing MCP tools for questions about the team's shared links. The servi
 
 - Call `share_link` only when the user asks to share a URL. Create one unique `idempotency_key` (for example a UUID) for that intended submission and reuse that exact key if the request must be retried. To intentionally create another share of the same URL, use a new key. Report the returned processing status; saving does not mean summary processing finished.
 - Call `withdraw_share` only when the user asks to withdraw one of their own shares. Confirm which share is meant when the reference is ambiguous. The service enforces ownership and other members' shares of the same URL remain available.
-- If a tool returns `isError`, explain the returned code and message. Do not claim a write succeeded without a successful tool result. A revoked connection needs a new OAuth authorization from Codex.
+- If a tool returns `isError`, explain the returned code and message. Do not claim a write succeeded without a successful tool result. A revoked connection needs a new OAuth authorization from the current client's Sharing connection settings.
 
 ## Examples
 
