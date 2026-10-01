@@ -110,6 +110,14 @@ OAuth 回跳可能出现 `127.0.0.1` 临时端口，这是客户端接收授权�
 
 Cursor 从 Customize 的 MCP 连接界面重新授权；Claude 出现需要认证或权限不足时，从 `/mcp` 的 Sharing 连接重新认证；Codex 从插件连接设置重连。不要在聊天或问题报告里粘贴令牌、授权码或带敏感参数的回调 URL。
 
+## Cursor 授权排障
+
+2026-09-30 Sharing 服务端已部署 Cursor 回调兼容修复（应用 `5b97020`），插件版本仍为 `0.4.0`，无需为此重新安装。若日志提示 `web clients require https redirect URIs on non-loopback hosts`，错误发生在打开浏览器前的 OAuth 客户端注册阶段。执行 **Developer: Reload Window** 后，从 Sharing MCP 连接再次授权。
+
+支持的 Cursor 桌面回调包括 `http://localhost:8787/callback`、`http://127.0.0.1:8787/callback`；这些是接收授权码的客户端地址，业务服务仍在生产 HTTPS。无需将它们加入 Google Web OAuth 客户端的回调列表。连续重试导致 `429` 时，暂停点击并等待限流窗口结束再试。
+
+线上注册和进入登录页的验证已通过；真实 Cursor 浏览器登录、回跳及工具调用仍需实际确认。详细修复与验收见 [应用仓库 Cursor 记录](https://github.com/TAO44123/Authright_Sharing/blob/main/docs/validation/B_CURSOR_PLUGIN.md)。
+
 ## 更新、回退与卸载
 
 Claude Code 更新：
@@ -138,7 +146,7 @@ Codex 在插件页面移除。还需要撤销数据访问权时，进入 [Sharin
 
 ## 验收范围
 
-安装、加载和授权是不同的检查项。此前 `0.3.0` 在 Claude Code `2.1.274` 中已通过严格格式校验、本地目录安装、六个 Skill 和一个生产 MCP 连接的组件检查。生产服务健康检查和 OAuth 发现此前已通过；详细结果记录在应用仓库的 `docs/validation/B_CLAUDE_PLUGIN.md`。真实 Google OAuth、五工具调用、刷新、撤权重连以及跨版本更新/回退，必须完成实际操作后才能认定通过。用户已反馈 Claude 测试正常；未提供逐项结果的刷新、撤权和写入场景保持独立验收。Cursor 的安装、运行时组件加载、OAuth 与业务调用分别记录于应用仓库 `docs/validation/B_CURSOR_PLUGIN.md`。仅文件校验或复制成功不能代替运行时检查。
+安装、加载和授权是不同的检查项。此前 `0.3.0` 在 Claude Code `2.1.274` 中已通过严格格式校验、本地目录安装、六个 Skill 和一个生产 MCP 连接的组件检查。生产服务健康检查和 OAuth 发现此前已通过；详细结果记录在应用仓库的 `docs/validation/B_CLAUDE_PLUGIN.md`。真实 Google OAuth、五工具调用、刷新、撤权重连以及跨版本更新/回退，必须完成实际操作后才能认定通过。用户已反馈 Claude 测试正常；未提供逐项结果的刷新、撤权和写入场景保持独立验收。2026-09-30 Codex 桌面通过 0.4.0 生产连接成功查询最近七天的 5 条分享；该只读查询不替代其他工具、刷新、撤权或安装来源验收。Cursor 的安装、运行时组件加载、OAuth 与业务调用分别记录于应用仓库 `docs/validation/B_CURSOR_PLUGIN.md`。仅文件校验或复制成功不能代替运行时检查。
 
 ## 维护者发布
 
